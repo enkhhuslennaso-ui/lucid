@@ -12,7 +12,6 @@ const {
 } = require('discord.js');
 const express = require('express');
 
-// Express сервер (Render Free-tier 24/7 идэвхтэй байлгахад зориулав)
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -24,7 +23,6 @@ app.listen(PORT, () => {
     console.log(`Web server running on port ${PORT}`);
 });
 
-// Discord Bot Client үүсгэх (Бүх шаардлагатай Intent-үүдтэй)
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -35,7 +33,6 @@ const client = new Client({
     ]
 });
 
-// Environment variables-ээс ID болон тохиргоонуудыг авах
 const CONFIG = {
     TEXT_LOG_ID: process.env.TEXT_LOG_ID || 'TEXT_LOG_CHANNEL_ID',
     VOICE_LOG_ID: process.env.VOICE_LOG_ID || 'VOICE_LOG_CHANNEL_ID',
@@ -47,21 +44,19 @@ const CONFIG = {
     MEMBER_ROLE_ID: process.env.MEMBER_ROLE_ID || 'CLAN_MEMBER_ROLE_ID'
 };
 
-// Bot асахад ажиллах хэсэг
 client.once('ready', () => {
     console.log(`=========================================`);
     console.log(`🚀 LUCID THEORY BOT #${client.user.tag} АМЖИЛТТАЙ АСЛАА!`);
     console.log(`🌐 Серверийн тоо: ${client.guilds.cache.size}`);
     console.log(`=========================================`);
     
-    // Bot Status / Activity тохируулах
     client.user.setPresence({
-        activities: [{ name: 'Lucid Theory Clan | !help-clan', type: 3 }], // 3 = Watching
+        activities: [{ name: 'Lucid Theory Clan | !help-clan', type: 3 }],
         status: 'online',
     });
 });
 
-// --- 1. WELCOME & GOODBYE SYSTEM ---
+// --- 1. WELCOME SYSTEM ---
 client.on('guildMemberAdd', async (member) => {
     try {
         const welcomeChannel = member.guild.channels.cache.get(CONFIG.WELCOME_CHANNEL_ID);
@@ -70,7 +65,7 @@ client.on('guildMemberAdd', async (member) => {
         const embed = new EmbedBuilder()
             .setColor('#9B59B6')
             .setTitle('✨ ШИНЭ ГИШҮҮН НЭГДЛЭЭ!')
-            .setDescription(`Мэнд хүргэе, ${member}!\n\n**Lucid Theory** кланы албан ёсны Discord серверт тавтай морил.\n\n• Дүрмээ уншиж танилцах: `#rules`\n• Тоглоомын цолоо авах: `#self-roles`\n• Кланд элсэх хүсэлт гаргах: `#apply-here``)
+            .setDescription(`Мэнд хүргэе, ${member}!\n\nLucid Theory кланы албан ёсны Discord серверт тавтай морил.\n\n• Дүрмээ уншиж танилцах: #rules\n• Тоглоомын цолоо авах: #self-roles\n• Кланд элсэх хүсэлт гаргах: #apply-here`)
             .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 512 }))
             .setFooter({ text: `Нийт гишүүн: ${member.guild.memberCount}`, iconURL: member.guild.iconURL() })
             .setTimestamp();
@@ -81,11 +76,10 @@ client.on('guildMemberAdd', async (member) => {
     }
 });
 
-// --- 2. AUTO-MODERATION (Link & Invite Filter) ---
+// --- 2. AUTO-MODERATION ---
 client.on('messageCreate', async (message) => {
     if (message.author.bot || !message.guild) return;
 
-    // Discord Invite Link шүүх (Хууль бус сервер сурталчлахаас сэргийлэх)
     if (message.content.includes('discord.gg/') || message.content.includes('discord.com/invite/')) {
         if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
             await message.delete().catch(() => {});
@@ -96,31 +90,26 @@ client.on('messageCreate', async (message) => {
     }
 });
 
-// --- 3. COMMANDS CENTER (!ticket-panel, !game-panel, !help-clan, !clear) ---
+// --- 3. COMMANDS CENTER ---
 client.on('messageCreate', async (message) => {
     if (message.author.bot || !message.guild) return;
 
     const args = message.content.trim().split(/ +/);
     const command = args.shift().toLowerCase();
 
-    // 1. Help Command
     if (command === '!help-clan') {
         const embed = new EmbedBuilder()
             .setColor('#2C3E50')
-            .setTitle('📜 LUCID THEORY BOT — КОМАНДУУДЫН ЖАГСААЛТ')
-            .setDescription('Админ болон гишүүдэд зориулсан тусламжийн хэсэг:')
+            .setTitle('📜 LUCID THEORY BOT — КОМАНДУУД')
             .addFields(
-                { name: '🎯 `!ticket-panel`', value: 'Дэмжлэг болон элсэлтийн билет нээх панель гаргана (Админ).' },
-                { name: '🎮 `!game-panel`', value: 'Тоглоомын цол сонгох товчлууртай панель гаргана (Админ).' },
-                { name: '🧹 `!clear [тоо]`', value: 'Чат дахь мессежүүдийг бөөнөөр нь устгана (Админ).' },
-                { name: '🤖 `!bot-info`', value: 'Ботын ажиллаж буй систем болон статус харуулна.' }
-            )
-            .setFooter({ text: 'Lucid Theory System' });
-
+                { name: '🎯 `!ticket-panel`', value: 'Билет нээх панель гаргана (Админ).' },
+                { name: '🎮 `!game-panel`', value: 'Тоглоомын цол сонгох панель гаргана (Админ).' },
+                { name: '🧹 `!clear [тоо]`', value: 'Мессеж бөөнөөр нь устгана (Админ).' },
+                { name: '🤖 `!bot-info`', value: 'Ботын статус шалгана.' }
+            );
         return message.reply({ embeds: [embed] });
     }
 
-    // 2. Bot Info Command
     if (command === '!bot-info') {
         const embed = new EmbedBuilder()
             .setColor('#3498DB')
@@ -128,54 +117,48 @@ client.on('messageCreate', async (message) => {
             .addFields(
                 { name: '🌐 Server', value: 'Render Cloud (Free Tier)', inline: true },
                 { name: '⚡ Ping', value: `${client.ws.ping}ms`, inline: true },
-                { name: '⚙️ Node.js', value: process.version, inline: true },
-                { name: '🛡️ Status', value: '100% Operational & Secure', inline: false }
-            )
-            .setTimestamp();
-
+                { name: '🛡️ Status', value: 'Operational', inline: true }
+            );
         return message.reply({ embeds: [embed] });
     }
 
-    // 3. Clear Chat Command
     if (command === '!clear') {
         if (!message.member.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
-            return message.reply('❌ Танд энэ командыг ашиглах эрх байхгүй байна (`Manage Messages` шаардлагатай).');
+            return message.reply('❌ Танд энэ командыг ашиглах эрх байхгүй байна.');
         }
 
         const count = parseInt(args[0]);
         if (isNaN(count) || count < 1 || count > 100) {
-            return message.reply('⚠️ 1-ээс 100 хооронд тоо оруулна уу! (Жишээ нь: `!clear 10`');
+            return message.reply('⚠️ 1-ээс 100 хооронд тоо оруулна уу!');
         }
 
         try {
             await message.channel.bulkDelete(count + 1, true);
-            const confirmation = await message.channel.send(`✅ Амжилттай **${count}** ширхэг мессеж устгалаа.`);
+            const confirmation = await message.channel.send(`✅ Амжилттай **${count}** мессеж устгалаа.`);
             setTimeout(() => confirmation.delete().catch(() => {}), 4000);
         } catch (err) {
-            return message.reply('❌ Мессеж устгах явцад алдаа гарлаа (14 хоногоос хуучин мессеж байж магадгүй).');
+            return message.reply('❌ Алдаа гарлаа.');
         }
     }
 
-    // 4. Ticket Panel Command
     if (command === '!ticket-panel') {
         if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-            return message.reply('❌ Энэ панелыг гаргахын тулд Администратор эрх хэрэгтэй!');
+            return message.reply('❌ Администратор эрх хэрэгтэй!');
         }
 
         const embed = new EmbedBuilder()
             .setColor('#7289DA')
-            .setTitle('🎫 LUCID THEORY — КЛАН ДЭМЖЛЭГ & ЭЛСЭЛТ')
-            .setDescription('Сервер болон клантай холбоотой асуудлаар доорх цэснээс сонгож **Ticket** нээнэ үү.\n\n• 🎯 **Кланд элсэх** (Tryout & Application)\n• 🤝 **Хамтран ажиллах** (Scrim / Match)\n• ⚠️ **Гомдол & Тусламж** (Support & Report)')
-            .setFooter({ text: 'Lucid Theory Automated System' });
+            .setTitle('🎫 LUCID THEORY — ДЭМЖЛЭГ & ЭЛСЭЛТ')
+            .setDescription('Доорх цэснээс сонгож Ticket нээнэ үү:\n\n• 🎯 Кланд элсэх\n• 🤝 Хамтран ажиллах / Scrim\n• ⚠️ Гомдол & Тусламж');
 
         const row = new ActionRowBuilder().addComponents(
             new StringSelectMenuBuilder()
                 .setCustomId('ticket_select_menu')
-                .setPlaceholder('Энд дарж билетний төрлөө сонгоно уу...')
+                .setPlaceholder('Сонгох хэсэг...')
                 .addOptions([
-                    { label: 'Кланд элсэх хүсэлт', description: 'Tryout болон бүртгэлийн талаар', value: 'ticket_apply', emoji: '🎯' },
-                    { label: 'Хамтран ажиллах / Scrim', description: 'Клан хоорондын тоглолт болон партнер', value: 'ticket_scrim', emoji: '🤝' },
-                    { label: 'Гомдол болон бусад тусламж', description: 'Админуудтай шууд холбогдох', value: 'ticket_other', emoji: '⚠️' }
+                    { label: 'Кланд элсэх хүсэлт', description: 'Tryout болон бүртгэл', value: 'ticket_apply', emoji: '🎯' },
+                    { label: 'Хамтран ажиллах / Scrim', description: 'Клан хоорондын тоглолт', value: 'ticket_scrim', emoji: '🤝' },
+                    { label: 'Гомдол болон бусад', description: 'Админуудтай холбогдох', value: 'ticket_other', emoji: '⚠️' }
                 ])
         );
 
@@ -183,16 +166,15 @@ client.on('messageCreate', async (message) => {
         await message.delete().catch(() => {});
     }
 
-    // 5. Game Role Panel Command
     if (command === '!game-panel') {
         if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-            return message.reply('❌ Энэ панелыг гаргахын тулд Администратор эрх хэрэгтэй!');
+            return message.reply('❌ Администратор эрх хэрэгтэй!');
         }
 
         const embed = new EmbedBuilder()
             .setColor('#9B59B6')
             .setTitle('🎮 ТОГЛООМЫН ЦОЛ СОНГОХ (SELF-ROLES)')
-            .setDescription('Доорх товчлууруудаас дарж өөрийн тоглодог тоглоомынхоо үндсэн цолыг авна уу! Дахин дарж цолоо хасах боломжтой.');
+            .setDescription('Доорх товчлууруудаас өөрийн тоглодог тоглоомоо сонгож цолоо аваарай!');
 
         const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder().setCustomId('role_cs').setLabel('Counter-Strike').setStyle(ButtonStyle.Primary).setEmoji('⚡'),
@@ -206,9 +188,8 @@ client.on('messageCreate', async (message) => {
     }
 });
 
-// --- 4. INTERACTION HANDLER (Buttons & Select Menus) ---
+// --- 4. INTERACTIONS ---
 client.on('interactionCreate', async (interaction) => {
-    // Game Role Button Logic
     if (interaction.isButton() && interaction.customId.startsWith('role_')) {
         const roleMap = {
             'role_cs': CONFIG.ROLE_CS,
@@ -221,19 +202,18 @@ client.on('interactionCreate', async (interaction) => {
         const role = interaction.guild.roles.cache.get(roleId);
 
         if (!role) {
-            return interaction.reply({ content: '❌ Уг серверт тохирох Role ID тохируулагдээгүй байна!', ephemeral: true });
+            return interaction.reply({ content: '❌ Role ID олдсонгүй!', ephemeral: true });
         }
 
         if (interaction.member.roles.cache.has(roleId)) {
             await interaction.member.roles.remove(roleId);
-            return interaction.reply({ content: `✅ Та **${role.name}** цолыг амжилттай хаслаа.`, ephemeral: true });
+            return interaction.reply({ content: `✅ Та **${role.name}** цолыг хаслаа.`, ephemeral: true });
         } else {
             await interaction.member.roles.add(roleId);
-            return interaction.reply({ content: `🎉 Та **${role.name}** цолыг амжилттай авлаа!`, ephemeral: true });
+            return interaction.reply({ content: `🎉 Та **${role.name}** цолыг авлаа!`, ephemeral: true });
         }
     }
 
-    // Ticket Select Menu Logic
     if (interaction.isStringSelectMenu() && interaction.customId === 'ticket_select_menu') {
         const selectedValue = interaction.values[0];
         let categoryName = 'SUPPORT';
@@ -246,7 +226,7 @@ client.on('interactionCreate', async (interaction) => {
         try {
             const ticketChannel = await guild.channels.create({
                 name: channelName,
-                type: 0, // Guild Text Channel
+                type: 0,
                 permissionOverwrites: [
                     { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
                     { id: interaction.user.id, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages, PermissionsBitField.Flags.ReadMessageHistory] }
@@ -260,25 +240,24 @@ client.on('interactionCreate', async (interaction) => {
             const welcomeEmbed = new EmbedBuilder()
                 .setColor('#2ECC71')
                 .setTitle(`🎫 Төрөл: ${categoryName}`)
-                .setDescription(`Сайн байна уу, ${interaction.user}?\nАдминууд удахгүй тантай холбогдох болно. Асуудлаа дэлгэрэнгүй бичнэ үү.`);
+                .setDescription(`Сайн байна уу, ${interaction.user}?\nАдминууд удахгүй холбогдох болно.`);
 
             await ticketChannel.send({ embeds: [welcomeEmbed], components: [closeRow] });
-            return interaction.reply({ content: `✅ Таны билет амжилттай үүслээ: ${ticketChannel}`, ephemeral: true });
+            return interaction.reply({ content: `✅ Билет үүслээ: ${ticketChannel}`, ephemeral: true });
         } catch (err) {
-            return interaction.reply({ content: '❌ Билет үүсгэх явцад алдаа гарлаа.', ephemeral: true });
+            return interaction.reply({ content: '❌ Билет үүсгэхэд алдаа гарлаа.', ephemeral: true });
         }
     }
 
-    // Close Ticket Button Logic
     if (interaction.isButton() && interaction.customId === 'close_ticket') {
-        await interaction.reply({ content: '🔒 Энэ билет 5 секундын дараа хаагдах болно...' });
+        await interaction.reply({ content: '🔒 Энэ билет 5 секундын дараа хаагдана...' });
         setTimeout(() => {
             interaction.channel.delete().catch(() => {});
         }, 5000);
     }
 });
 
-// --- 5. LOGGING SYSTEM (Text Delete & Voice State) ---
+// --- 5. MESSAGE DELETE LOGS ---
 client.on('messageDelete', async (message) => {
     if (!message.guild || !message.author || message.author.bot) return;
     const textLog = message.guild.channels.cache.get(CONFIG.TEXT_LOG_ID);
@@ -298,11 +277,10 @@ client.on('messageDelete', async (message) => {
         message.attachments.forEach((att) => {
             files.push(new AttachmentBuilder(att.proxyURL, { name: att.name }));
         });
-        embed.addFields({ name: '📎 Хавсралт', value: `${message.attachments.size} файл хавсаргасан байсан.` });
+        embed.addFields({ name: '📎 Хавсралт', value: `${message.attachments.size} файл` });
     }
 
     textLog.send({ embeds: [embed], files: files }).catch(() => {});
 });
 
-// Bot нэвтрэх
 client.login(process.env.TOKEN);
