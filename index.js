@@ -1,27 +1,3 @@
-function getStepLogger(manager) {
-    try {
-        if (manager && typeof manager.getLogger === "function") {
-            return manager.getLogger();
-        }
-    }
-    catch (_error) {
-        // Ignore and fall back to console logger.
-    }
-    return {
-        info: function (message) { if (typeof console !== "undefined" && console.log) { console.log(message); } },
-        warn: function (message) { if (typeof console !== "undefined" && console.warn) { console.warn(message); } },
-        error: function (message) { if (typeof console !== "undefined" && console.error) { console.error(message); } },
-        severe: function (message) { if (typeof console !== "undefined" && console.error) { console.error(message); } }
-    };
-}
-
-/**
- * STEP Business Rule
- * Trademark: AI Labz Ltd (TM)
- * Purpose: Describe the rule intent and expected side effects.
- * Notes: Keep transactions short and avoid repeated writes in loops.
- */
-
 const {
     Client,
     GatewayIntentBits,
@@ -61,41 +37,30 @@ const client = new Client({
 });
 
 // ==========================================
-// ⚙️ СЕРВЕРИЙН БҮХ ID-НУУД
+// ⚙️ ТОХИРГОО (Render Environment Variables-ээс автоматаар уншина)
 // ==========================================
 const CONFIG = {
-    TOKEN: process.env.TOKEN || 'ТАНЫ_БОТЫН_TOKEN',
-    GUILD_ID: '1571166756355969134',
-    ADMIN_ROLE_ID: '1571166796873080965',
-    AUTO_ROLE_ID: null,
+    TOKEN: process.env.TOKEN,
+    GUILD_ID: process.env.GUILD_ID,
+    ADMIN_ROLE_ID: process.env.ADMIN_ROLE_ID,
+    AUTO_ROLE_ID: process.env.AUTO_ROLE_ID || null,
 
-    // CS2 болон Тоглоомын Role ID-нууд
-    ROLE_AWP: 'AWP_ROLE_ID',               // Хэрэв CS2 байрлал хэрэгтэй бол ID-гаа энд тавина
-    ROLE_RIFLER: 'RIFLER_ROLE_ID',
-    ROLE_IGL: 'IGL_ROLE_ID',
-    ROLE_SUPPORT: 'SUPPORT_ROLE_ID',
-
-    // Шинэ тоглоомын Role ID-нууд
-    ROLE_CS: '1571357618398699640',       // Counter Strike
-    ROLE_VAL: '1571357785638051900',      // Valorant
-    ROLE_MC: '1571357701621940315',       // Minecraft
-    ROLE_RBX: '1571357855561420920',      // Roblox
+    // Тоглоомын Role ID-нууд
+    ROLE_CS: process.env.ROLE_CS,
+    ROLE_VAL: process.env.ROLE_VAL,
+    ROLE_MC: process.env.ROLE_MC,
+    ROLE_RBX: process.env.ROLE_RBX,
 
     // Channel & Category ID-нууд
-    TICKET_CATEGORY_ID: '1571213412032188626',
-    WELCOME_CHANNEL_ID: '1571197629616889946',
-    MEMBER_LOG_ID: '1571355846431084554',
-    TEXT_LOG_ID: '1571216197473533972',
-    VOICE_LOG_ID: '1571216312309387476',
-    TICKET_LOG_ID: '1571216472095727716',
-    MOD_LOG_ID: '1571216408073736333'
+    TICKET_CATEGORY_ID: process.env.TICKET_CATEGORY_ID,
+    WELCOME_CHANNEL_ID: process.env.WELCOME_CHANNEL_ID,
+    MEMBER_LOG_ID: process.env.MEMBER_LOG_ID,
+    TEXT_LOG_ID: process.env.TEXT_LOG_ID,
+    VOICE_LOG_ID: process.env.VOICE_LOG_ID,
+    TICKET_LOG_ID: process.env.TICKET_LOG_ID,
+    MOD_LOG_ID: process.env.MOD_LOG_ID
 };
 
-/**
- * STEP business rule function: formatTime.
- * TODO: Describe purpose, side effects, and expected node/context state.
- * @param {*} timestamp
- */
 function formatTime(timestamp) {
     return `<t:${Math.floor(timestamp / 1000)}:F> (<t:${Math.floor(timestamp / 1000)}:R>)`;
 }
@@ -103,10 +68,6 @@ function formatTime(timestamp) {
 client.once('ready', () => {
     console.log(`✅ ${client.user.tag} амжилттай аслаа!`);
 
-    /**
- * STEP business rule function: updateStatus.
- * TODO: Describe purpose, side effects, and expected node/context state.
- */
     const updateStatus = () => {
         const guild = client.guilds.cache.get(CONFIG.GUILD_ID);
         const count = guild ? guild.memberCount : 0;
